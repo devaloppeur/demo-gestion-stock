@@ -11,15 +11,16 @@ import com.skysoft.gestionstock.validator.ArticleValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class ArticlesServiceImpl implements ArticlesService {
 
-    @Autowired
     private ArticlesRepository articlesRepository;
     // Constructeur
     @Autowired
@@ -27,6 +28,8 @@ public class ArticlesServiceImpl implements ArticlesService {
 
         this.articlesRepository = articlesRepository;
     }
+
+
 
 
     // Ici on vérifie que l'article est valide avant de l'enregistrer dans la BD
@@ -43,11 +46,16 @@ public class ArticlesServiceImpl implements ArticlesService {
         return ArticlesDto.fromEntity(savedArticle);
     }
 
+
+
+
+
     @Override
-    public ArticlesDto findById(Integer id) {
+    public ArticlesDto findById(Long id) {
 
         if (id == null) {
             log.error("Article ID is null");
+            return null;
         }
 
         Optional<Articles> articles = articlesRepository.findById(id);
@@ -60,18 +68,43 @@ public class ArticlesServiceImpl implements ArticlesService {
                         ErrorCodes.ARTICLE_NOT_FOUND));
     }
 
+
+
+
     @Override
     public ArticlesDto findByNumarticle(String numarticle) {
-        return null;
+        if (!StringUtils.hasLength(numarticle)) {
+            log.error("Article ID is null");
+        }
+        Optional<Articles> articles = articlesRepository.findArticlesByNumarticle(numarticle);
+
+        ArticlesDto dto = ArticlesDto.fromEntity(articles.get());
+
+        return Optional.of(dto).orElseThrow(() ->
+                new EntityNotFoundException(
+                        "Aucun article avec le numero =" +numarticle+"n'a été trouvé dans la BD",
+                        ErrorCodes.ARTICLE_NOT_FOUND));
     }
+
+
+
+
+
 
     @Override
     public List<ArticlesDto> findAll() {
-        return null;
+
+        return articlesRepository.findAll().stream()
+                .map(ArticlesDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void delete(Integer id) {
-
+    public void delete(Long id) {
+        if (id == null) {
+            log.error("Article ID is null");
+            return;
+        }
+        articlesRepository.deleteById(id);
     }
 }

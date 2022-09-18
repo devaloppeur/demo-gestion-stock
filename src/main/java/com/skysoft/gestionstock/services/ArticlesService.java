@@ -7,9 +7,13 @@ import java.util.List;
 public interface ArticlesService {
 
     ArticlesDto save(ArticlesDto dto);
-    ArticlesDto findById(Integer id);
+
+    ArticlesDto findById(Long id);
+
     ArticlesDto findByNumarticle(String numarticle);
+
     List<ArticlesDto> findAll();
 
-    void delete(Integer id);
+    void delete(Long id);
+
 }
